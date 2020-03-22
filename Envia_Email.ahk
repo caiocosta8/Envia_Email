@@ -8,42 +8,110 @@ Gui Font,, Calibri
 Gui Add, Text, x32 y40 w91 h23 +0x200 vEscolhaArquivo, Escolha o arquivo
 Gui Font
 Gui Font,, Calibri
-Gui Add, Button, x40 y344 w138 h23 vIniciar, Iniciar
+Gui Add, Edit, x120 y40 w198 h21 vCaminhoArquivo Disabled
 Gui Font
 Gui Font,, Calibri
-Gui Add, Button, x216 y344 w153 h22 vCancelar, Cancelar
+Gui Add, Button, x320 y40 w24 h21 vBtnEscolhaArquivo, ...
 Gui Font
 Gui Font, s7 Italic cRed, Calibri
 Gui Add, Link, x168 y64 w81 h17, <a href="template\template.xlsx">Template padrão</a>
 Gui Font
 Gui Font,, Calibri
-Gui Add, Progress, x40 y312 w325 h21 -Smooth , 0
-Gui Font
-Gui Font,, Calibri
-Gui Add, Button, x320 y40 w24 h21 vBtnEscolhaArquivo, ...
-Gui Font
-Gui Font,, Calibri
-Gui Add, Edit, x120 y40 w198 h21 vCaminhoArquivo Disabled
-Gui Font
-Gui Font,, Calibri
-Gui Add, Edit, x40 y144 w327 h160 vCorpoEmail,  Digite aqui o corpo do e-mail....
-Gui Font
-Gui Font,, Calibri
-Gui Add, Text, x80 y88 w43 h19 +0x200 vAssunto, Assunto
+Gui Add, Text, x70 y88 w43 h19 +0x200 vAssunto, Assunto
 Gui Font
 Gui Font,, Calibri
 Gui Add, Edit, x120 y88 w199 h20 vTxtAssunto
 Gui Font
-
-Gui Show, w461 h431, Envia E-mails
+Gui Font,, Calibri
+Gui Add, Text, x70 y124 w43 h19 +0x200 vlblEscolhaImagem, Imagem
+Gui Font
+Gui Font,, Calibri
+Gui Add, Edit, x120 y124 w199 h20 vCaminhoImagem Disabled
+Gui Font
+Gui Font,, Calibri
+Gui Add, Button, x320 y124 w24 h21 vEscolhaImagem, ....
+Gui Font
+Gui Font,, Calibri
+Gui Add, Edit, x40 y164 w327 h110 vCorpoEmail,  Digite aqui o corpo do e-mail....
+Gui Font
+Gui Font,, Calibri
+Gui Add, GroupBox, x60 y280 w280 h100, Assinatura
+Gui Font
+Gui Font,, Calibri
+Gui Add, Text, x80 y300 w43 h19 +0x200 vlblNome, Nome
+Gui Font
+Gui Font,, Calibri
+Gui Add, Edit, x120 y300 w199 h20 vTxtNome
+Gui Font
+Gui Font,, Calibri
+Gui Add, Text, x81 y325 w43 h19 +0x200 vlblCargo, Cargo
+Gui Font
+Gui Font,, Calibri
+Gui Add, Edit, x120 y325 w199 h20 vTxtCargo
+Gui Font
+Gui Font,, Calibri
+Gui Add, Text, x68 y350 w43 h19 +0x200 vlblTelefone, Telefone
+Gui Font
+Gui Font,, Calibri
+Gui Add, Edit, x120 y350 w199 h20 vTxtTelefone
+Gui Font
+Gui Font,, Calibri
+Gui Add, Button, x40 y394 w138 h23 vIniciar, Iniciar
+Gui Font
+Gui Font,, Calibri
+Gui Add, Button, x216 y394 w153 h22 vCancelar, Cancelar
+Gui Font
+Gui Show, w400 h450, Envia E-mails
 Return
 
 Button...:
-    FileSelectFile, OutputVar , Options, %A_Scriptdir%\template
-    GuiControl,, CaminhoArquivo, %OutputVar%
-    GuiControlGet, CaminhoArquivo
+    FileSelectFile, CaminhoTemplate , Options, %A_Scriptdir%\template
+    GuiControl,, CaminhoArquivo, %CaminhoTemplate%
 Return
+
+Button....:
+    FileSelectFile, CaminhoImagem , Options, %A_Desktop%
+    GuiControl,, CaminhoImagem, %CaminhoImagem%
+Return
+
 ButtonIniciar:
+    GuiControlGet, TxtAssunto
+    GuiControlGet, CorpoEmail
+    GuiControlGet, CaminhoArquivo
+    GuiControlGet, CaminhoImagem
+    GuiControlGet, TxtNome
+    GuiControlGet, TxtCargo
+    GuiControlGet, TxtTelefone
+    GuiControlGet, Assinatura
+    QuantidadeEmails := 0
+    SplitPath, CaminhoArquivo, NomeArquivo
+    SplitPath, CaminhoImagem, NomeImagem
+
+    if (CaminhoArquivo == "")
+    {
+        Msgbox 32, Campo vazio,Favor escolher o template a ser utilizado
+        Return
+    }
+    if (TxtAssunto == "")
+    {
+        Msgbox 32, Campo vazio,Favor digitar o assunto do e-mail
+        Return
+    }
+    if (CorpoEmail == "" || CorpoEmail == "Digite aqui o corpo do e-mail....")
+    {
+        Msgbox 32, Campo vazio,Favor digitar o corpo do e-mail
+        Return
+    }
+    if (Assinatura == "Digite aqui sua assinatura....")
+    {
+        Msgbox 32, Assinatura , Por gentileza remova o texto da assinatura se não for utilizá-la.
+        Return
+    }
+
+    Msgbox 36, Atenção!,1. Abra o Outlook;`n2. Feche todas as janelas do Excel;`n3. Clique em Sim após ler as informações abaixo para iniciar o envio.`n`nVocê pode cancelar o envio a qualquer momento apertando a tecla ESC `n`nDeseja continuar?
+        IfMsgBox No
+	        Return
+
     xl := ComObjCreate("Excel.Application")
     xl.Visible := true
     xl.Workbooks.Open(CaminhoArquivo)
@@ -52,34 +120,78 @@ ButtonIniciar:
 
     Loop, %Linhas%
     {
+        FormatTime, Data, NOW,dd/MM/yyyy hh:mm:ss
         if (A_index == 1)
             Continue
 
+        Evolucao := ((A_Index-1) / (Linhas-1)) * 100
+
         Nome := xl.ActiveSheet.Range("A"A_index).Value
         Email := xl.ActiveSheet.Range("B"A_index).Value
+        DataEnvio := xl.ActiveSheet.Range("C"A_index).Value
+        Status := xl.ActiveSheet.Range("D"A_index).Value
 
-        GuiControlGet, TxtAssunto
-        GuiControlGet, CorpoEmail
+        ; progress, y200,,Enviando e-mail para: %Email%,Enviando e-mails
+        progress, % Evolucao,,Enviando e-mail para: %Nome%,Enviando e-mails
+
+        if (Status == "O Email foi enviado com sucesso")
+            Continue
+
         recipient := Email
-        emailBody := "Olá papai/mamãe de " Nome ","
-        emailBody .= "`n " CorpoEmail
+        emailBody := "Olá papai/mamãe de <b>" Nome "</b>,"
 
         Outlook := ComObjActive("Outlook.Application")
         email := Outlook.Application.CreateItem(0)
 
         email.Subject := TxtAssunto
+    
+        emailBody=
+                (
+                    <html>
+                        <body>
+                            <font size="2" face="Calibri" color="black">
+                            <p>%EmailBody%</p>
+                            <p>%CorpoEmail%</p>
+                            <p>%TxtNome%<br>
+                            %TxtCargo%<br>
+                            %TxtTelefone%</p>
+                            <p><img src=%CaminhoImagem% alt="Assinatura";"></p>
+                        </body>
+                    </html>
+                )
         email.HTMLbody := emailBody
         email.To := recipient
 
         email.display
 
-        email.send()
-    }
-    
-Return
-ButtonCancelar:
-    ExitApp
-GuiEscape:
+        try
+        {
+            email.send()
+            xl.ActiveSheet.Range("D"A_index).Value := "O Email foi enviado com sucesso"
+            QuantidadeEmails++
+        }
+        catch
+        {
+            xl.ActiveSheet.Range("D"A_index).Value := "O Email não foi enviado com sucesso"
+        }
 
+        xl.ActiveSheet.Range("C"A_index).Value := Data
+        ; xl.ActiveWorkbook.save()
+    }
+    Progress, Off
+    msgbox, 32, E-mails enviados, Foram enviados um total de %QuantidadeEmails% e-mails com sucesso.
+    
+    WinActive(NomeArquivo)
+
+Return
+
+GuiEscape:
+ButtonCancelar:
+    Process,Close,excel.exe
+    ExitApp
 GuiClose:
+    Process,Close,excel.exe
+    ExitApp
+ESC::
+    Process,Close,excel.exe
     ExitApp
