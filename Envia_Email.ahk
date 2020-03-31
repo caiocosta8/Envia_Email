@@ -99,13 +99,12 @@ ButtonIniciar:
     GuiControlGet, TxtAssunto
     GuiControlGet, CorpoEmail
     GuiControlGet, CaminhoArquivo
-    GuiControlGet, CaminhoImagem
     GuiControlGet, TxtNome
     GuiControlGet, TxtCargo
     GuiControlGet, TxtTelefone
     GuiControlGet, Assinatura
     QuantidadeEmails := 0
-
+    
     if (CaminhoArquivo == "")
     {
         Msgbox 32, Campo vazio,Favor escolher o template a ser utilizado
