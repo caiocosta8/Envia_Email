@@ -187,6 +187,9 @@ ButtonIniciar:
                     </html>
                 )
         email.HTMLbody := emailBody
+
+        Sleep, 1000
+
         email.To := recipient
 
         email.display
