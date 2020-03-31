@@ -105,8 +105,6 @@ ButtonIniciar:
     GuiControlGet, TxtTelefone
     GuiControlGet, Assinatura
     QuantidadeEmails := 0
-    SplitPath, CaminhoArquivo, NomeArquivo
-    SplitPath, CaminhoImagem, NomeImagem
 
     if (CaminhoArquivo == "")
     {
@@ -124,7 +122,7 @@ ButtonIniciar:
         Return
     }
 
-    Msgbox 36, Atenção!,1. Abra o Outlook;`n2. Feche todas as janelas do Excel;`n3. Selecione e exclua todas as linhas em branco;`n4. Clique em Sim após ler as informações abaixo para iniciar o envio.`n`nVocê pode cancelar o envio a qualquer momento apertando a tecla ESC `n`nDeseja continuar?
+    Msgbox 36, Atenção!,1. Abra o Outlook;`n2. Selecione e exclua todas as linhas em branco da planilha que contém os e-mails;`n3. Feche todas as janelas do Excel;`n4. Clique em Sim após ler as informações abaixo para iniciar o envio.`n`nVocê pode cancelar o envio a qualquer momento apertando a tecla ESC `n`nDeseja continuar?
         IfMsgBox No
 	        Return
 
@@ -162,7 +160,6 @@ ButtonIniciar:
             Continue
 
         recipient := Email
-        emailBody := "Olá papai/mamãe de <b>" Nome "</b>,"
 
         try
         {
@@ -182,7 +179,6 @@ ButtonIniciar:
                     <html>
                         <body>
                             <font size="2" face="Calibri" color="black">
-                            <p>%EmailBody%</p>
                             <p>%CorpoEmail%</p>
                             <p>%TxtNome%<br>
                             %TxtCargo%<br>
